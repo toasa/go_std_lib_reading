@@ -1,0 +1,14 @@
+- 概要
+    - Goの様々なデータ型を JSON 形式にエンコードする関数群
+- 実装
+    - 呼び出し構造
+        - `Marshal`
+        - `marshal`
+        - `reflectValue`
+        - `valueEncoder`
+        - `typeEncoder`
+        - `newTypeEncoder`
+            - 型に応じたエンコーダを選ぶ
+                - `reflect.Bool` ==> `boolEncoder`
+                - `reflect.Int` ==> `intEncoder`
+                - `reflect.Slice` ==> `newSliceEncoder`

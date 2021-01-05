@@ -1,0 +1,16 @@
+- 概要
+    - HTTP Cookie を扱うライブラリ
+    - Cookie とは
+        - サーバとクライアントとの間でユーザの状態などを管理するための仕組み
+        - HTTP にステート（状態）をもたせる事ができる
+            - 
+    - Cookie の主な属性値
+        - <名前>=<値>
+        - Expires=<日時>
+        - Max-Age=<値>
+        - Domain=<ドメイン指定>
+            - first party cookie と third party cookie
+            - first party cookie
+                - アクセスしたドメインから発行された cookie
+                - つまり Domain の属性値がアクセスしたドメインと同じ場合 first party
+
