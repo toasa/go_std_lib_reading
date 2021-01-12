@@ -1,0 +1,188 @@
+### `package ast`
+
+- 概要
+    - Go の構文木を表現する型を定義したパッケージ
+
+### `type Node interface`
+
+- 概要
+    - AST のノードを表現するインタフェース
+    - 三種類のノードがある
+        - expression と type のノード
+        - statement のノード
+        - declaration のノード
+    - すべてのノードはソースコードの位置情報を表すデータを持つ
+
+### `type Expr interface`
+
+- 概要
+    - expression と type を表現するインタフェース
+- `Expr` を満たす構造体の例
+    - 式を表す構造体の例
+        - `Ident`
+            - 識別子を表す構造体
+            - フィールドは３つ
+                - `NamePos token.Pos`
+                - `Name    string`
+                - `Obj     *Object`
+        - `BasicLit`
+            - 整数、浮動小数点数、複素数、文字列など標準の型を表す構造体
+            - フィールドは３つ
+                - `ValuePos token.Pos`
+                - `Kind     token.Token`
+                    - ex. `token.INT`
+                - `Value    string`
+                    - ex. `"42"`
+        - `FuncLit`
+            - 関数を表す構造体
+            - フィールドは２つ
+                - `Type *FuncType`
+                - `Body *BlockStmt`
+        - `CompositeLit`
+            - 構造体の初期化などで使わるデータ型
+            - `{`と`}`で囲まれる
+            - フィールドは５つ
+                - `Type       Expr`
+                - `Lbrace     token.Pos`
+                - `Elts       []Expr`
+                    - elements
+                - `Rbrace     token.Pos`
+                - `Incomplete bool`
+        - `IndexExpr`
+            - 式とそれに続くインデックスを表す構造体
+            - フィールドは４つ
+                - `X Expr`
+                - `Lbrack token.Pos`
+                    - `[` の位置
+                - `Index  Expe`
+                - `Rbrack token.Pos`
+                    - `]` の位置
+        - `SliceExpr`
+            - スライスを表す構造体
+            - フィールドは７つ
+                - `X      Expr`
+                - `Lbrack token.Pos`
+                - `Low    Expr`
+                    - スライスのはじまり、先頭のインデックスのこと？
+                - `High   Expr`
+                    - スライスのおわり、最後のインデックスのこと？
+                - `Max    Expr`
+                    - スライスの容量 (capacity)
+                - `Slice3 bool`
+                - `Rbrack token.Pos`
+        - `CallExpr`
+            - 関数呼び出しを表す構造体
+            - 関数と実引数のリストを持つ
+            - フィールドは５つ
+                - `Fun      Expr`
+                - `Lparen   token.Pos`
+                - `Args     []Expr`
+                - `Ellipsis token.Pos`
+                    - `...`の位置。`...`が存在しなければ `token.NoPos` を埋める
+                - `Rparen   token.Pos`
+        - `UnaryExpr`
+            - 単項演算を表す構造体
+            - フィールドは３つ
+                - `OpPos token.Pos`
+                - `Op    token.Token`
+                - `X     Expr`
+        - `BinaryExpr`
+            - 二項演算を表す構造体
+            - フィールドは４つ
+                - `X     Expr`
+                    - 左辺値
+                - `OpPos token.Pos`
+                - `Op    token.Token`
+                - `Y     Expr`
+                    - 右辺値
+        - `KeyValueExpr`
+            - キーバリューペアを表す構造体
+            - フィールドは３つ
+                - `Key   Expr`
+                - `Colon token.Pos`
+                - `Value Expr`
+    - 型を表す構造体の例
+        - `ArrayType`
+            - 配列型を表す構造体
+            - フィールドは３つ
+                - `Lbrack token.Pos`
+                - `Len    Expr`
+                - `Elt    Expr`
+        - `StructType`
+            - 構造体型を表す構造体
+            - フィールドは３つ
+                - `Struct     token.Pos`
+                - `Fields     *FieldList`
+                - `Incomplete bool`
+        - `FucType`
+            - 関数型を表す構造体
+            - フィールドは３つ
+                - `Func    token.Pos`
+                - `Params  *FieldList`
+                - `Results *FieldList`
+        - `InterfaceType struct`
+            - インタフェース型を表す構造体
+            - フィールドは３つ
+                - `Interface  token.Pos`
+                - `Methods    *FieldList`
+                    - メソッドのリスト
+                - `Incomplete bool`
+        - `MapType struct`
+            - マップ型を表す構造体
+            - フィールドは３つ
+                - `Map   token.Pos`
+                - `Key   token.Pos`
+                - `Value token.Pos`
+
+### `type Stmt interface`
+
+- 概要
+    - 文を表現するインタフェース
+- `Stmt` を満たす構造体の例
+    - `DeclStmt`
+        - 宣言文を表す構造体
+        - フィールドは１つ
+            - `Decl Decl`
+    - `LabeledStmt`
+        - ラベル付きの文を表す構造体
+        - フィールドは３つ
+            - `Label *Ident`
+            - `Colon token.Pos`
+            - `Stmt  Stmt`
+    - `ExprStmt`
+        - 式文を表す構造体
+        - フィールドは１つ
+            - `X Expr`
+    - `IncDecStmt`
+        - インクリメント、またはデクリメントを表す構造体
+        - フィールドは３つ
+            - `X      Expr`
+            - `TokPos token.Pos`
+            - `Tok    token.Token`
+    - `ReturnStmt`
+        - リターン文を表す構造体
+        - フィールドは２つ
+            - `Return  token.Pos`
+            - `Results []Expr`
+    - `IfStmt`
+        - if 文を表す構造体
+        - フィールドは５つ
+            - `If   token.Pos`
+            - `Init Stmt`
+            - `Cond Expr`
+            - `Body *BlockStmt`
+            - `Else Stmt`
+    - `ForStmt`
+        - for 文を表す構造体
+        - フィールド５つ
+            - `For token.Pos`
+            - `Init Stmt`
+            - `Cond Expr`
+            - `Post Stmt`
+            - `Body *BlockStmt`
+
+### `type Decl interface`
+
+- 概要
+    - 宣言を表すインタフェース
+
