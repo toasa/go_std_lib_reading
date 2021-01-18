@@ -12,6 +12,7 @@
         - 取得した時間を比較、演算などする場合は monotonic clock を使う
 
 ### `type Time struct`
+
 - 概要
     - nano秒精度の時間インスタンスを表す
     - フィールドは３つ
@@ -32,6 +33,37 @@
     - 時間計算
         - `Sub` メソッドは２つの `Time` インスタンスを引数にとり、`Duration` インスタンスを返す
         - `Add` メソッドは `Time` インスタンスと `Duration` インスタンスを引数にとり、`Time` インスタンスを返す
+
+#### `func (t *Time) nsec() int32`
+
+- 概要
+    - `t` のナノ秒を返す
+- 実装
+    - `t.wall` の 0-30bit がナノ秒を表すので、マスクして返す
+    - `return t.wall & (1 << 30 - 1)`
+
+#### `func (t *Time) sec() int64`
+
+- 概要
+    - `t` の秒を返す
+- 実装
+    - `hasMonotonic` flag が 1 の場合
+        - 1/1/1から1885/1/1 までの経過秒数 + t.wall の30-63bit の値
+            - `return wallToInternal + int64(t.wall<<1>>(nsecShift+1))`
+                - `t.wall<<1` をしているのは `t.wall` の最上位ビットの `hasMonotonic` flag をクリアするため
+    - `hasMonotonic` flag が 0 の場合
+        - `return t.ext`
+
+#### `func (t *Time) addSec(d int64)`
+
+- 実装
+    - hasMonotonic フラグが1の場合、単に `t.ext += d` とするだけ
+    - `t.ext` は `int64` 型なのでオーバーフロー時はラップアラウンドして、マイナスの値になってしまう
+
+#### `func (t *Time) unixSec() int64`
+
+- 概要
+    - Unix時間(1970/1/1)からの経過秒数を返す
 
 #### `var daysBefore`
 
