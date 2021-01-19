@@ -65,6 +65,16 @@
 - 概要
     - Unix時間(1970/1/1)からの経過秒数を返す
 
+#### `func (t Time) After(u Time) bool`
+
+- 概要
+    - 時間 `t` と `u` を比較し、`t` が `u` よりも後の場合 `true` を返す
+- 実装
+    - monotonic clock をどちらも持つ場合
+        - `return t.ext > u.ext`
+    - それ以外
+        - `t` と `u` を秒へ変換し、比較。一致する場合はナノ秒まで見る
+
 #### `var daysBefore`
 
 - 概要
@@ -92,3 +102,20 @@
 
 - 概要
     - 文字列 `layout` の中から、Time layout 文字列を見つけ、`prefix` と `suffix` に切り分けて返す
+
+#### `func absDate(abs uint64, full bool) (year int, month Month, day int, yday int)`
+
+- 概要
+    - `abs` 秒から年月日を計算する
+- 実装
+    - まず日数に変換
+        - `d := abs / secondsPerDay`
+    - 次に年を概算
+        - ```
+          n := d / daysPer400Years`
+          y := 400 * n
+          d -= daysPer400Years * n
+          ```
+    - そして 100 年, 4 年単位のうるう年調整で、年と日の値を修正する
+
+
